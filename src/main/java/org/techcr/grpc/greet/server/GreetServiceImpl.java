@@ -134,6 +134,7 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
         Greeting greeting = request.getGreeting();
 
         Context context = Context.current();
+        context.withCancellation().cancel(new RuntimeException("Need To cancel"));
         try {
             System.out.println("Greet request for:" + greeting.getFirstName());
             for (int i = 0; i < 3; i++) {
