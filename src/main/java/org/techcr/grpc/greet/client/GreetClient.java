@@ -11,6 +11,11 @@ import org.proto.greet.GreetResponse;
 import org.proto.greet.GreetServiceGrpc;
 import org.proto.greet.Greeting;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
+
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
@@ -52,6 +57,9 @@ public class GreetClient {
 
         //call greet with deadline
 //        client.greetWithDeadline(channel);
+
+        //future stub example
+        //client.unaryAPIFuture(channel);
 
         channel.shutdown();
         System.out.println("Channel shutdowned. ");
@@ -112,6 +120,34 @@ public class GreetClient {
 
         GreetResponse response = syncGreetClient.greet(request);
         System.out.println("Unary Greet Result: " + response.getResult());
+    }
+
+    public void unaryAPIFuture(ManagedChannel channel) {
+        GreetServiceGrpc.GreetServiceFutureStub syncGreetClient = GreetServiceGrpc.newFutureStub(channel);
+        //GreetServiceGrpc.GreetServiceFutureStub futureStub = GreetServiceGrpc.newFutureStub(channel);
+        System.out.println("Unary API");
+        Greeting greeting = Greeting.newBuilder()
+            .setFirstName("Chamly")
+            .setLastName("Rathnayaka")
+            .build();
+
+        GreetRequest request = GreetRequest.newBuilder()
+            .setGreeting(greeting)
+            .build();
+
+        ListenableFuture<GreetResponse> futureResponse = syncGreetClient.greet(request);
+
+        Futures.addCallback(futureResponse, new FutureCallback<GreetResponse>() {
+            @Override
+            public void onSuccess(GreetResponse result) {
+                System.out.println("Unary Greet Future Result: " + result.getResult());
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                t.printStackTrace();
+            }
+        }, MoreExecutors.directExecutor());
     }
 
     public void serverStreamAPI(ManagedChannel channel) {
